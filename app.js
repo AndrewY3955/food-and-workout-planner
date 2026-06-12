@@ -6,7 +6,12 @@
 class Dashboard {
     constructor() {
         this.profile = Storage.getProfile();
-        this.init();
+
+    this.activeModal = null;
+
+    this.selectedMealType = 'breakfast';
+
+    this.init();
     }
 
     init() {
@@ -199,6 +204,17 @@ class Dashboard {
             this.showProfileModal();
         });
     }
+    
+    openModal(content) {
+    const overlay = document.getElementById('modal-overlay');
+    const modal = document.getElementById('modal-content');
+    modal.innerHTML = content;
+    overlay.classList.remove('hidden');
+
+    }
+    closeModal() {
+    document.getElementById('modal-overlay').classList.add('hidden');
+    }
 
     /**
      * Remove food item from log
@@ -220,44 +236,60 @@ class Dashboard {
      * Save workout to storage
      */
     saveWorkout() {
-        const exercise = prompt('Enter exercise name:');
-        if (!exercise) return;
+    this.openModal(`
+        <h2>Add Workout</h2>
+        <input id="exercise-name" placeholder="Exercise"><br>
+        <input id="exercise-set" type="number" placeholder="Set"><br>
+        <input id="exercise-weight" type="number" placeholder="Weight"><br>
+        <input id="exercise-reps" type="number" placeholder="Reps"><br>
+        <button id="save-workout-btn">Save</button>
+    `);
 
-        const set = prompt('Enter set number:') || 1;
-        const weight = prompt('Enter weight (lbs/kg):') || 0;
-        const reps = prompt('Enter reps:') || 0;
-
-        Storage.addWorkout(exercise, parseInt(set), parseFloat(weight), parseInt(reps));
+    document.getElementById('save-workout-btn').onclick = () => {
+        Storage.addWorkout(
+            document.getElementById('exercise-name').value,
+            parseInt(document.getElementById('exercise-set').value) || 1,
+            parseFloat(document.getElementById('exercise-weight').value) || 0,
+            parseInt(document.getElementById('exercise-reps').value) || 0
+        );
+        this.closeModal();
         this.render();
-        alert('Workout saved!');
+    };
+
     }
 
     /**
      * Show food add dialog (simplified version)
      */
-    showFoodAddDialog() {
-        const foodName = prompt('Enter food name:');
-        if (!foodName) return;
+    showFoodAddDialog(mealType = 'breakfast') {
+    this.openModal(`
+        <h2>Add Food</h2>
+        <input id="food-name" placeholder="Food name"><br>
+        <input id="food-calories" type="number" placeholder="Calories"><br>
+        <input id="food-protein" type="number" placeholder="Protein"><br>
+        <input id="food-carbs" type="number" placeholder="Carbs"><br>
+        <input id="food-fats" type="number" placeholder="Fats"><br>
+        <select id="food-meal">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snacks">Snacks</option>
+        </select>
+        <button id="save-food-btn">Save</button>
+    `);
 
-        const calories = prompt('Enter calories:') || 0;
-        const protein = prompt('Enter protein (g):') || 0;
-        const carbs = prompt('Enter carbs (g):') || 0;
-        const fats = prompt('Enter fats (g):') || 0;
-
-        const mealType = prompt('Meal type (breakfast/lunch/dinner/snacks):') || 'breakfast';
-
-        Storage.addFoodLog(
-            {
-                name: foodName,
-                calories: parseFloat(calories),
-                protein: parseFloat(protein),
-                carbs: parseFloat(carbs),
-                fats: parseFloat(fats)
-            },
-            mealType
-        );
+    document.getElementById('save-food-btn').onclick = () => {
+        Storage.addFoodLog({
+            name: document.getElementById('food-name').value,
+            calories: parseFloat(document.getElementById('food-calories').value) || 0,
+            protein: parseFloat(document.getElementById('food-protein').value) || 0,
+            carbs: parseFloat(document.getElementById('food-carbs').value) || 0,
+            fats: parseFloat(document.getElementById('food-fats').value) || 0
+        }, document.getElementById('food-meal').value);
+        this.closeModal();
         this.render();
-    }
+    };
+}
 
     /**
      * Barcode scanner placeholder
@@ -270,13 +302,23 @@ class Dashboard {
      * Show profile modal
      */
     showProfileModal() {
-        const profile = Storage.getProfile();
-        const goalCalories = prompt('Enter daily calorie goal:', profile.goalCalories);
-        if (goalCalories) {
-            Storage.updateProfile({ goalCalories: parseFloat(goalCalories) });
-            this.render();
-        }
-    }
+    const profile = Storage.getProfile();
+    this.openModal(`
+        <h2>Profile Settings</h2>
+        <input id="goal-calories-input" type="number" 
+               value="${profile.goalCalories}" placeholder="Calories">
+        <button id="save-profile-btn">Save</button>
+    `);
+    document.getElementById('save-profile-btn').onclick = () => {
+        Storage.updateProfile({
+            goalCalories: parseFloat(
+                document.getElementById('goal-calories-input').value
+            )
+        });
+        this.closeModal();
+        this.render();
+    };
+}
 
     /**
      * Recalculate metrics
