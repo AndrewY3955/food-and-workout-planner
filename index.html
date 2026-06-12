@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Custom Tailwind config overrides */
+        :root {
+            --color-mfp-blue: #0066EE;
+            --color-charcoal: #2A2E33;
+            --color-light-gray: #F4F5F7;
+        }
+        
+        * {
+            --tw-ring-color: transparent;
+        }
+        
+        body {
+            background-color: var(--color-light-gray);
+            color: var(--color-charcoal);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .card-base {
+            background: white;
+            border: 1px solid #E8EAED;
+            border-radius: 4px;
+        }
+        
+        .text-mfp-blue {
+            color: var(--color-mfp-blue);
+        }
+        
+        .btn-primary {
+            background-color: var(--color-mfp-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0052CC;
+        }
+        
+        .btn-text {
+            background: none;
+            border: none;
+            color: var(--color-mfp-blue);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 0;
+            transition: color 0.2s;
+        }
+        
+        .btn-text:hover {
+            color: #0052CC;
+        }
+        
+        .table-compact {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .table-compact td, .table-compact th {
+            padding: 10px 0;
+            border-bottom: 1px solid #E8EAED;
+            text-align: left;
+        }
+        
+        .table-compact th {
+            background: #FAFBFC;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+        }
+        
+        .table-compact tbody tr:hover {
+            background: #FAFBFC;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #E8EAED;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--color-mfp-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .section-divider {
+            border-top: 1px solid #E8EAED;
+            margin: 16px 0;
+        }
+        
+        .meal-section-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--color-charcoal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 16px 0 8px 0;
+            padding-left: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- STICKY HEADER -->
+<header class="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#E8EAED] z-50">
+    <div class="h-full px-4 flex items-center justify-between">
+        <h1 class="text-xl font-bold text-charcoal">Dashboard</h1>
+        <button id="profile-btn" class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg cursor-pointer hover:bg-blue-600">
+            A
+        </button>
+    </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="pt-20 pb-8 px-4 max-w-4xl mx-auto">
+
+    <!-- HERO BANNER: Goal - Food = Remaining -->
+    <div class="card-base p-4 mb-6">
+        <div class="grid grid-cols-3 gap-2 text-center">
+            <!-- Goal Column -->
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Goal</p>
+                <p class="text-2xl font-bold text-charcoal" id="goal-calories">2000</p>
+                <p class="text-xs text-gray-400">cal</p>
+            </div>
+            
+            <!-- Minus Column -->
+            <div class="flex flex-col justify-center">
+                <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Food</p>
+                <p class="text-2xl font-bold text-charcoal" id="food-logged">0</p>
+                <p class="text-xs text-gray-400">cal</p>
+            </div>
+            
+            <!-- Equals Column -->
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase mb-1">Remaining</p>
+                <p class="text-2xl font-bold text-mfp-blue" id="remaining-calories">2000</p>
+                <p class="text-xs text-gray-400">cal</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUTRITION QUICK STATS: Macros Progress Bars -->
+    <div class="card-base p-4 mb-6">
+        <p class="text-sm font-bold text-charcoal mb-4">NUTRITION</p>
+        
+        <!-- Carbs -->
+        <div class="mb-4">
+            <div class="flex justify-between mb-1">
+                <span class="text-xs font-semibold text-charcoal">Carbs</span>
+                <span class="text-xs text-gray-600" id="carbs-display">0 / 250g</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="carbs-progress" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Protein -->
+        <div class="mb-4">
+            <div class="flex justify-between mb-1">
+                <span class="text-xs font-semibold text-charcoal">Protein</span>
+                <span class="text-xs text-gray-600" id="protein-display">0 / 150g</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="protein-progress" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Fats -->
+        <div>
+            <div class="flex justify-between mb-1">
+                <span class="text-xs font-semibold text-charcoal">Fats</span>
+                <span class="text-xs text-gray-600" id="fats-display">0 / 67g</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="fats-progress" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOD LOGGING SECTION -->
+    <div class="card-base p-4 mb-6">
+        <p class="text-sm font-bold text-charcoal mb-4">FOOD LOG</p>
+        
+        <!-- Breakfast Section -->
+        <div>
+            <p class="meal-section-header">Breakfast</p>
+            <table class="table-compact" id="breakfast-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Food</th>
+                        <th class="text-right w-16">Cals</th>
+                        <th class="text-center w-12">×</th>
+                    </tr>
+                </thead>
+                <tbody id="breakfast-items"></tbody>
+            </table>
+            <div class="flex gap-2 mt-3 pb-4 border-b border-[#E8EAED]">
+                <button class="btn-text text-xs">+ ADD FOOD</button>
+                <button class="btn-text text-xs">📷 SCAN BARCODE</button>
+            </div>
+        </div>
+        
+        <!-- Lunch Section -->
+        <div>
+            <p class="meal-section-header">Lunch</p>
+            <table class="table-compact" id="lunch-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Food</th>
+                        <th class="text-right w-16">Cals</th>
+                        <th class="text-center w-12">×</th>
+                    </tr>
+                </thead>
+                <tbody id="lunch-items"></tbody>
+            </table>
+            <div class="flex gap-2 mt-3 pb-4 border-b border-[#E8EAED]">
+                <button class="btn-text text-xs">+ ADD FOOD</button>
+                <button class="btn-text text-xs">📷 SCAN BARCODE</button>
+            </div>
+        </div>
+        
+        <!-- Dinner Section -->
+        <div>
+            <p class="meal-section-header">Dinner</p>
+            <table class="table-compact" id="dinner-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Food</th>
+                        <th class="text-right w-16">Cals</th>
+                        <th class="text-center w-12">×</th>
+                    </tr>
+                </thead>
+                <tbody id="dinner-items"></tbody>
+            </table>
+            <div class="flex gap-2 mt-3 pb-4 border-b border-[#E8EAED]">
+                <button class="btn-text text-xs">+ ADD FOOD</button>
+                <button class="btn-text text-xs">📷 SCAN BARCODE</button>
+            </div>
+        </div>
+        
+        <!-- Snacks Section -->
+        <div>
+            <p class="meal-section-header">Snacks</p>
+            <table class="table-compact" id="snacks-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Food</th>
+                        <th class="text-right w-16">Cals</th>
+                        <th class="text-center w-12">×</th>
+                    </tr>
+                </thead>
+                <tbody id="snacks-items"></tbody>
+            </table>
+            <div class="flex gap-2 mt-3">
+                <button class="btn-text text-xs">+ ADD FOOD</button>
+                <button class="btn-text text-xs">📷 SCAN BARCODE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WORKOUT SECTION -->
+    <div class="card-base p-4 mb-6">
+        <p class="text-sm font-bold text-charcoal mb-4">WORKOUT LOG</p>
+        
+        <!-- Split Type Selector -->
+        <div class="mb-4">
+            <label class="text-xs font-semibold text-charcoal block mb-2">Split Type</label>
+            <select id="split-selector" class="w-full border border-[#E8EAED] rounded px-3 py-2 text-sm font-medium bg-white text-charcoal focus:outline-none focus:border-mfp-blue">
+                <option value="ppl">Push / Pull / Legs</option>
+                <option value="upper-lower">Upper / Lower</option>
+                <option value="full-body">Full Body</option>
+                <option value="bro-split">Bro Split</option>
+            </select>
+        </div>
+        
+        <!-- Exercise Table -->
+        <table class="table-compact" id="workout-table">
+            <thead>
+                <tr>
+                    <th class="text-left">Exercise</th>
+                    <th class="text-center w-12">Set</th>
+                    <th class="text-center w-16">lbs/kg</th>
+                    <th class="text-center w-12">Reps</th>
+                    <th class="text-center w-12">✓</th>
+                </tr>
+            </thead>
+            <tbody id="workout-items"></tbody>
+        </table>
+        
+        <!-- Notes Field -->
+        <div class="mt-4">
+            <label class="text-xs font-semibold text-charcoal block mb-2">Performance Notes</label>
+            <textarea id="workout-notes" class="w-full border border-[#E8EAED] rounded px-3 py-2 text-sm bg-white text-charcoal focus:outline-none focus:border-mfp-blue resize-none" rows="2" placeholder="Add notes..."></textarea>
+        </div>
+        
+        <!-- Save Button -->
+        <button class="btn-primary mt-3 w-full">Save Workout</button>
+    </div>
+
+    <!-- AI COACH PANEL -->
+    <div class="card-base p-4 mb-8">
+        <p class="text-sm font-bold text-charcoal mb-4">AI COACH INSIGHTS</p>
+        
+        <div class="bg-[#FAFBFC] border border-[#E8EAED] rounded p-3 mb-4">
+            <p class="text-sm text-charcoal leading-relaxed" id="ai-insight">
+                Welcome! Log your meals and workouts to receive personalized insights.
+            </p>
+        </div>
+        
+        <div class="bg-[#FAFBFC] border border-[#E8EAED] rounded p-3 mb-4">
+            <p class="text-xs text-gray-600 mb-2 font-semibold">RECOMMENDATIONS</p>
+            <ul class="text-sm text-charcoal space-y-1" id="ai-recommendations">
+                <li>• Start logging your daily intake</li>
+                <li>• Set your macro targets in settings</li>
+                <li>• Track workouts for better insights</li>
+            </ul>
+        </div>
+        
+        <button class="btn-primary w-full">Recalculate Plan Metrics</button>
+    </div>
+
+</main>
+
+<!-- Scripts -->
+<script src="storage.js"></script>
+<script src="macros.js"></script>
+<script src="ai-engine.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
